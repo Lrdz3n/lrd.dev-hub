@@ -1,3 +1,4 @@
+
 -- LRD.dev UI Library
 -- The most advanced, feature-rich UI library for Roblox with smooth animations
 -- Version 2.0.0 - Premium Edition
@@ -12,10 +13,15 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 local Lighting = game:GetService("Lighting")
 local SoundService = game:GetService("SoundService")
-local TextService = game:GetService("TextService")
+local GuiService = game:GetService("GuiService")
+local MarketplaceService = game:GetService("MarketplaceService")
 local HttpService = game:GetService("HttpService")
+local TextService = game:GetService("TextService")
+local Debris = game:GetService("Debris")
 
 -- Variables
 local LocalPlayer = Players.LocalPlayer
@@ -37,7 +43,8 @@ LRDLibrary.Config = {
     DebugMode = false,
     RippleEffects = true,
     ParticleEffects = true,
-    GlassmorphismEnabled = true
+    GlassmorphismEnabled = true,
+    SpringAnimations = true
 }
 
 -- Sound Effects
@@ -46,38 +53,37 @@ LRDLibrary.Sounds = {
     Hover = "rbxassetid://6895079853", 
     Success = "rbxassetid://6026984976",
     Error = "rbxassetid://6026984976",
-    Notification = "rbxassetid://9770089602",
+    Notification = "rbxassetid://6026984976",
     Tab = "rbxassetid://6895079853",
     Toggle = "rbxassetid://6895079853",
     Slider = "rbxassetid://6895079853",
-    Whoosh = "rbxassetid://1177785010",
-    Pop = "rbxassetid://198598793"
+    Whoosh = "rbxassetid://6895079853",
+    Pop = "rbxassetid://6026984976"
 }
 
 -- Advanced Theme System with Glassmorphism
 LRDLibrary.Themes = {
     Default = {
-        Name = "Glassmorphism Dark",
+        Name = "Midnight Pro",
         Primary = Color3.fromRGB(138, 43, 226),
         PrimaryHover = Color3.fromRGB(148, 63, 236),
         Secondary = Color3.fromRGB(75, 75, 85),
         Accent = Color3.fromRGB(255, 100, 150),
         
         Background = Color3.fromRGB(15, 15, 20),
-        BackgroundGlass = Color3.fromRGB(25, 25, 35),
-        SecondaryBackground = Color3.fromRGB(20, 20, 30),
-        TertiaryBackground = Color3.fromRGB(10, 10, 15),
-        Topbar = Color3.fromRGB(30, 30, 40),
+        SecondaryBackground = Color3.fromRGB(20, 20, 25),
+        TertiaryBackground = Color3.fromRGB(25, 25, 30),
+        Topbar = Color3.fromRGB(18, 18, 23),
         Shadow = Color3.fromRGB(0, 0, 0),
         
-        ElementBackground = Color3.fromRGB(35, 35, 45),
-        ElementBackgroundHover = Color3.fromRGB(45, 45, 55),
-        ElementBackgroundActive = Color3.fromRGB(55, 55, 65),
-        ElementStroke = Color3.fromRGB(80, 80, 90),
+        ElementBackground = Color3.fromRGB(30, 30, 35),
+        ElementBackgroundHover = Color3.fromRGB(35, 35, 40),
+        ElementBackgroundActive = Color3.fromRGB(40, 40, 45),
+        ElementStroke = Color3.fromRGB(60, 60, 65),
         
-        TabBackground = Color3.fromRGB(40, 40, 50),
+        TabBackground = Color3.fromRGB(25, 25, 30),
         TabBackgroundSelected = Color3.fromRGB(138, 43, 226),
-        TabStroke = Color3.fromRGB(70, 70, 80),
+        TabStroke = Color3.fromRGB(45, 45, 50),
         
         TextColor = Color3.fromRGB(255, 255, 255),
         SecondaryTextColor = Color3.fromRGB(200, 200, 200),
@@ -91,25 +97,34 @@ LRDLibrary.Themes = {
         ToggleEnabled = Color3.fromRGB(138, 43, 226),
         ToggleDisabled = Color3.fromRGB(70, 70, 75),
         
-        SliderBackground = Color3.fromRGB(60, 60, 65),
+        SliderBackground = Color3.fromRGB(40, 40, 45),
         SliderProgress = Color3.fromRGB(138, 43, 226),
         
-        NotificationBackground = Color3.fromRGB(25, 25, 35),
+        NotificationBackground = Color3.fromRGB(25, 25, 30),
         NotificationBorder = Color3.fromRGB(138, 43, 226),
         
         GraphLine = Color3.fromRGB(138, 43, 226),
-        GraphBackground = Color3.fromRGB(35, 35, 45)
+        GraphBackground = Color3.fromRGB(30, 30, 35),
+        
+        CodeBackground = Color3.fromRGB(18, 18, 23),
+        CodeText = Color3.fromRGB(248, 248, 242),
+        CodeKeyword = Color3.fromRGB(249, 38, 114),
+        CodeString = Color3.fromRGB(230, 219, 116),
+        CodeComment = Color3.fromRGB(117, 113, 94),
+        
+        GlassBackground = Color3.fromRGB(255, 255, 255),
+        GlassTransparency = 0.95,
+        BlurIntensity = 15
     },
     
     Light = {
-        Name = "Glassmorphism Light",
+        Name = "Arctic Light",
         Primary = Color3.fromRGB(99, 102, 241),
         PrimaryHover = Color3.fromRGB(79, 70, 229),
         Secondary = Color3.fromRGB(156, 163, 175),
         Accent = Color3.fromRGB(236, 72, 153),
         
         Background = Color3.fromRGB(248, 250, 252),
-        BackgroundGlass = Color3.fromRGB(255, 255, 255),
         SecondaryBackground = Color3.fromRGB(241, 245, 249),
         TertiaryBackground = Color3.fromRGB(226, 232, 240),
         Topbar = Color3.fromRGB(255, 255, 255),
@@ -120,7 +135,7 @@ LRDLibrary.Themes = {
         ElementBackgroundActive = Color3.fromRGB(241, 245, 249),
         ElementStroke = Color3.fromRGB(226, 232, 240),
         
-        TabBackground = Color3.fromRGB(248, 250, 252),
+        TabBackground = Color3.fromRGB(241, 245, 249),
         TabBackgroundSelected = Color3.fromRGB(99, 102, 241),
         TabStroke = Color3.fromRGB(226, 232, 240),
         
@@ -143,29 +158,38 @@ LRDLibrary.Themes = {
         NotificationBorder = Color3.fromRGB(99, 102, 241),
         
         GraphLine = Color3.fromRGB(99, 102, 241),
-        GraphBackground = Color3.fromRGB(255, 255, 255)
+        GraphBackground = Color3.fromRGB(248, 250, 252),
+        
+        CodeBackground = Color3.fromRGB(241, 245, 249),
+        CodeText = Color3.fromRGB(15, 23, 42),
+        CodeKeyword = Color3.fromRGB(147, 51, 234),
+        CodeString = Color3.fromRGB(34, 197, 94),
+        CodeComment = Color3.fromRGB(100, 116, 139),
+        
+        GlassBackground = Color3.fromRGB(255, 255, 255),
+        GlassTransparency = 0.7,
+        BlurIntensity = 10
     },
     
     Neon = {
-        Name = "Neon Cyber",
+        Name = "Cyber Neon",
         Primary = Color3.fromRGB(0, 255, 255),
         PrimaryHover = Color3.fromRGB(0, 230, 255),
         Secondary = Color3.fromRGB(255, 0, 255),
         Accent = Color3.fromRGB(255, 255, 0),
         
         Background = Color3.fromRGB(5, 5, 10),
-        BackgroundGlass = Color3.fromRGB(10, 10, 20),
-        SecondaryBackground = Color3.fromRGB(0, 0, 5),
-        TertiaryBackground = Color3.fromRGB(0, 0, 0),
-        Topbar = Color3.fromRGB(10, 10, 20),
+        SecondaryBackground = Color3.fromRGB(10, 10, 15),
+        TertiaryBackground = Color3.fromRGB(15, 15, 20),
+        Topbar = Color3.fromRGB(8, 8, 13),
         Shadow = Color3.fromRGB(0, 0, 0),
         
-        ElementBackground = Color3.fromRGB(15, 15, 25),
-        ElementBackgroundHover = Color3.fromRGB(20, 20, 30),
-        ElementBackgroundActive = Color3.fromRGB(25, 25, 35),
+        ElementBackground = Color3.fromRGB(15, 15, 20),
+        ElementBackgroundHover = Color3.fromRGB(20, 20, 25),
+        ElementBackgroundActive = Color3.fromRGB(25, 25, 30),
         ElementStroke = Color3.fromRGB(0, 255, 255),
         
-        TabBackground = Color3.fromRGB(15, 15, 25),
+        TabBackground = Color3.fromRGB(10, 10, 15),
         TabBackgroundSelected = Color3.fromRGB(0, 255, 255),
         TabStroke = Color3.fromRGB(255, 0, 255),
         
@@ -181,14 +205,78 @@ LRDLibrary.Themes = {
         ToggleEnabled = Color3.fromRGB(0, 255, 0),
         ToggleDisabled = Color3.fromRGB(50, 50, 50),
         
-        SliderBackground = Color3.fromRGB(50, 50, 50),
+        SliderBackground = Color3.fromRGB(30, 30, 35),
         SliderProgress = Color3.fromRGB(0, 255, 255),
         
-        NotificationBackground = Color3.fromRGB(10, 10, 20),
+        NotificationBackground = Color3.fromRGB(10, 10, 15),
         NotificationBorder = Color3.fromRGB(0, 255, 255),
         
         GraphLine = Color3.fromRGB(0, 255, 255),
-        GraphBackground = Color3.fromRGB(15, 15, 25)
+        GraphBackground = Color3.fromRGB(15, 15, 20),
+        
+        CodeBackground = Color3.fromRGB(5, 5, 10),
+        CodeText = Color3.fromRGB(255, 255, 255),
+        CodeKeyword = Color3.fromRGB(255, 0, 255),
+        CodeString = Color3.fromRGB(0, 255, 0),
+        CodeComment = Color3.fromRGB(100, 100, 100),
+        
+        GlassBackground = Color3.fromRGB(0, 255, 255),
+        GlassTransparency = 0.9,
+        BlurIntensity = 20
+    },
+    
+    Ocean = {
+        Name = "Ocean Depths",
+        Primary = Color3.fromRGB(14, 165, 233),
+        PrimaryHover = Color3.fromRGB(2, 132, 199),
+        Secondary = Color3.fromRGB(71, 85, 105),
+        Accent = Color3.fromRGB(34, 211, 238),
+        
+        Background = Color3.fromRGB(8, 47, 73),
+        SecondaryBackground = Color3.fromRGB(12, 74, 110),
+        TertiaryBackground = Color3.fromRGB(14, 116, 144),
+        Topbar = Color3.fromRGB(7, 89, 133),
+        Shadow = Color3.fromRGB(0, 0, 0),
+        
+        ElementBackground = Color3.fromRGB(15, 118, 110),
+        ElementBackgroundHover = Color3.fromRGB(17, 94, 89),
+        ElementBackgroundActive = Color3.fromRGB(20, 83, 45),
+        ElementStroke = Color3.fromRGB(34, 211, 238),
+        
+        TabBackground = Color3.fromRGB(12, 74, 110),
+        TabBackgroundSelected = Color3.fromRGB(14, 165, 233),
+        TabStroke = Color3.fromRGB(30, 58, 138),
+        
+        TextColor = Color3.fromRGB(255, 255, 255),
+        SecondaryTextColor = Color3.fromRGB(186, 230, 253),
+        DisabledTextColor = Color3.fromRGB(100, 116, 139),
+        
+        Success = Color3.fromRGB(34, 197, 94),
+        Warning = Color3.fromRGB(251, 191, 36),
+        Error = Color3.fromRGB(248, 113, 113),
+        Info = Color3.fromRGB(56, 189, 248),
+        
+        ToggleEnabled = Color3.fromRGB(14, 165, 233),
+        ToggleDisabled = Color3.fromRGB(71, 85, 105),
+        
+        SliderBackground = Color3.fromRGB(30, 58, 138),
+        SliderProgress = Color3.fromRGB(14, 165, 233),
+        
+        NotificationBackground = Color3.fromRGB(12, 74, 110),
+        NotificationBorder = Color3.fromRGB(14, 165, 233),
+        
+        GraphLine = Color3.fromRGB(34, 211, 238),
+        GraphBackground = Color3.fromRGB(15, 118, 110),
+        
+        CodeBackground = Color3.fromRGB(8, 47, 73),
+        CodeText = Color3.fromRGB(186, 230, 253),
+        CodeKeyword = Color3.fromRGB(34, 211, 238),
+        CodeString = Color3.fromRGB(52, 211, 153),
+        CodeComment = Color3.fromRGB(100, 116, 139),
+        
+        GlassBackground = Color3.fromRGB(14, 165, 233),
+        GlassTransparency = 0.85,
+        BlurIntensity = 12
     }
 }
 
@@ -213,59 +301,80 @@ LRDLibrary.Languages = {
         Success = "Success",
         Error = "Error",
         Warning = "Warning",
-        Info = "Information"
+        Info = "Information",
+        Copy = "Copy",
+        Paste = "Paste",
+        Delete = "Delete",
+        Edit = "Edit",
+        Search = "Search",
+        Filter = "Filter",
+        Sort = "Sort",
+        Export = "Export",
+        Import = "Import",
+        Help = "Help",
+        About = "About",
+        Premium = "Premium",
+        Advanced = "Advanced",
+        Basic = "Basic"
     }
 }
 
 -- Advanced Animation System with Spring Physics
 LRDLibrary.Animations = {
-    Spring = function(object, properties, dampening, frequency, callback)
-        dampening = dampening or 0.8
-        frequency = frequency or 4
-        
+    -- Spring-based animations
+    SpringIn = function(object, targetProperties, duration, dampening, frequency)
         local info = TweenInfo.new(
-            0.5,
+            duration or 0.5,
+            Enum.EasingStyle.Back,
+            Enum.EasingDirection.Out,
+            0,
+            false,
+            0
+        )
+        return TweenService:Create(object, info, targetProperties)
+    end,
+    
+    -- Elastic bounce
+    ElasticBounce = function(object, targetProperties, duration)
+        local info = TweenInfo.new(
+            duration or 0.6,
             Enum.EasingStyle.Elastic,
             Enum.EasingDirection.Out,
             0,
             false,
             0
         )
-        
-        local tween = TweenService:Create(object, info, properties)
-        tween:Play()
-        
-        if callback then
-            tween.Completed:Connect(callback)
-        end
-        
-        return tween
+        return TweenService:Create(object, info, targetProperties)
     end,
     
-    FadeIn = function(object, duration, callback)
+    -- Smooth fade with easing
+    FadeIn = function(object, duration, delay)
         object.Transparency = 1
-        local tween = TweenService:Create(object, TweenInfo.new(duration or 0.3, Enum.EasingStyle.Quad), {Transparency = 0})
-        tween:Play()
-        
-        if callback then
-            tween.Completed:Connect(callback)
-        end
-        
-        return tween
+        local info = TweenInfo.new(
+            duration or 0.3,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.Out,
+            0,
+            false,
+            delay or 0
+        )
+        return TweenService:Create(object, info, {Transparency = 0})
     end,
     
-    FadeOut = function(object, duration, callback)
-        local tween = TweenService:Create(object, TweenInfo.new(duration or 0.3, Enum.EasingStyle.Quad), {Transparency = 1})
-        tween:Play()
-        
-        if callback then
-            tween.Completed:Connect(callback)
-        end
-        
-        return tween
+    FadeOut = function(object, duration, delay)
+        local info = TweenInfo.new(
+            duration or 0.3,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.Out,
+            0,
+            false,
+            delay or 0
+        )
+        return TweenService:Create(object, info, {Transparency = 1})
     end,
     
-    SlideIn = function(object, direction, duration, callback)
+    -- Advanced slide animations
+    SlideIn = function(object, direction, duration, easing)
         local originalPos = object.Position
         local offscreenPos
         
@@ -280,163 +389,184 @@ LRDLibrary.Animations = {
         end
         
         object.Position = offscreenPos
-        local tween = TweenService:Create(object, TweenInfo.new(duration or 0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = originalPos})
-        tween:Play()
-        
-        if callback then
-            tween.Completed:Connect(callback)
-        end
-        
-        return tween
+        local info = TweenInfo.new(
+            duration or 0.4,
+            easing or Enum.EasingStyle.Back,
+            Enum.EasingDirection.Out
+        )
+        return TweenService:Create(object, info, {Position = originalPos})
     end,
     
-    Bounce = function(object, intensity, duration, callback)
-        intensity = intensity or 10
-        duration = duration or 0.1
-        
+    -- Scale with overshoot
+    ScaleIn = function(object, targetScale, duration)
+        object.Size = UDim2.new(0, 0, 0, 0)
+        local info = TweenInfo.new(
+            duration or 0.4,
+            Enum.EasingStyle.Back,
+            Enum.EasingDirection.Out
+        )
+        return TweenService:Create(object, info, {Size = targetScale})
+    end,
+    
+    -- Rotation animation
+    Rotate = function(object, degrees, duration)
+        local info = TweenInfo.new(
+            duration or 0.5,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.Out
+        )
+        return TweenService:Create(object, info, {Rotation = degrees})
+    end,
+    
+    -- Pulse effect
+    Pulse = function(object, intensity, duration)
         local originalSize = object.Size
-        local tween1 = TweenService:Create(object, TweenInfo.new(duration, Enum.EasingStyle.Quad), {
-            Size = originalSize + UDim2.new(0, intensity, 0, intensity)
-        })
+        local pulseSize = UDim2.new(
+            originalSize.X.Scale + intensity,
+            originalSize.X.Offset,
+            originalSize.Y.Scale + intensity,
+            originalSize.Y.Offset
+        )
+        
+        local tween1 = TweenService:Create(object, 
+            TweenInfo.new(duration/2 or 0.15, Enum.EasingStyle.Quad), 
+            {Size = pulseSize}
+        )
+        local tween2 = TweenService:Create(object, 
+            TweenInfo.new(duration/2 or 0.15, Enum.EasingStyle.Quad), 
+            {Size = originalSize}
+        )
         
         tween1:Play()
         tween1.Completed:Connect(function()
-            local tween2 = TweenService:Create(object, TweenInfo.new(duration, Enum.EasingStyle.Quad), {
-                Size = originalSize
-            })
             tween2:Play()
-            
-            if callback then
-                tween2.Completed:Connect(callback)
-            end
         end)
         
         return tween1
     end,
     
-    Shake = function(object, intensity, duration, callback)
-        intensity = intensity or 5
-        duration = duration or 0.5
-        
+    -- Shake animation with decay
+    Shake = function(object, intensity, duration)
         local originalPos = object.Position
         local connection
         local elapsed = 0
+        local frequency = 20 -- Shakes per second
         
         connection = RunService.Heartbeat:Connect(function(dt)
             elapsed = elapsed + dt
-            if elapsed >= duration then
+            if elapsed >= (duration or 0.5) then
                 object.Position = originalPos
                 connection:Disconnect()
-                if callback then callback() end
                 return
             end
             
-            local x = math.random(-intensity, intensity)
-            local y = math.random(-intensity, intensity)
+            local progress = elapsed / (duration or 0.5)
+            local currentIntensity = intensity * (1 - progress) -- Decay over time
+            
+            local x = math.sin(elapsed * frequency) * currentIntensity
+            local y = math.cos(elapsed * frequency * 1.5) * currentIntensity
+            
             object.Position = originalPos + UDim2.new(0, x, 0, y)
         end)
         
         return connection
     end,
     
-    Pulse = function(object, scale, duration, callback)
-        scale = scale or 1.1
-        duration = duration or 0.5
+    -- Typewriter effect for text
+    TypeWriter = function(textLabel, fullText, speed)
+        textLabel.Text = ""
+        local currentText = ""
         
-        local originalSize = object.Size
-        local tween1 = TweenService:Create(object, TweenInfo.new(duration/2, Enum.EasingStyle.Sine), {
-            Size = originalSize * scale
-        })
-        
-        tween1:Play()
-        tween1.Completed:Connect(function()
-            local tween2 = TweenService:Create(object, TweenInfo.new(duration/2, Enum.EasingStyle.Sine), {
-                Size = originalSize
-            })
-            tween2:Play()
-            
-            if callback then
-                tween2.Completed:Connect(callback)
-            end
-        end)
-        
-        return tween1
-    end
-}
-
--- Particle System for Enhanced Effects
-LRDLibrary.Particles = {
-    CreateConfetti = function(parent, count, colors)
-        count = count or 20
-        colors = colors or {
-            Color3.fromRGB(255, 100, 150),
-            Color3.fromRGB(138, 43, 226),
-            Color3.fromRGB(52, 152, 219),
-            Color3.fromRGB(46, 204, 113),
-            Color3.fromRGB(241, 196, 15)
-        }
-        
-        for i = 1, count do
-            local particle = Instance.new("Frame")
-            particle.Size = UDim2.new(0, math.random(4, 8), 0, math.random(4, 8))
-            particle.Position = UDim2.new(math.random(), 0, -0.1, 0)
-            particle.BackgroundColor3 = colors[math.random(1, #colors)]
-            particle.BorderSizePixel = 0
-            particle.Parent = parent
-            
-            local corner = Instance.new("UICorner")
-            corner.CornerRadius = UDim.new(0, 2)
-            corner.Parent = particle
-            
-            -- Animate particle
-            local endY = math.random(110, 130) / 100
-            local endX = particle.Position.X.Scale + (math.random(-20, 20) / 100)
-            
-            local tween = TweenService:Create(particle, TweenInfo.new(
-                math.random(15, 25) / 10,
-                Enum.EasingStyle.Quad,
-                Enum.EasingDirection.Out
-            ), {
-                Position = UDim2.new(endX, 0, endY, 0),
-                Rotation = math.random(-180, 180)
-            })
-            
-            tween:Play()
-            tween.Completed:Connect(function()
-                particle:Destroy()
-            end)
+        for i = 1, #fullText do
+            currentText = fullText:sub(1, i)
+            textLabel.Text = currentText
+            wait(speed or 0.05)
         end
     end,
     
-    CreateRipple = function(parent, position, color)
-        local ripple = Instance.new("Frame")
-        ripple.Size = UDim2.new(0, 0, 0, 0)
-        ripple.Position = position
-        ripple.BackgroundColor3 = color or LRDLibrary.Theme.Primary
-        ripple.BackgroundTransparency = 0.5
-        ripple.BorderSizePixel = 0
-        ripple.ZIndex = parent.ZIndex + 1
-        ripple.Parent = parent
-        
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(1, 0)
-        corner.Parent = ripple
-        
-        local maxSize = math.max(parent.AbsoluteSize.X, parent.AbsoluteSize.Y) * 2
-        
-        local tween = TweenService:Create(ripple, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, maxSize, 0, maxSize),
-            Position = UDim2.new(position.X.Scale, position.X.Offset - maxSize/2, position.Y.Scale, position.Y.Offset - maxSize/2),
-            BackgroundTransparency = 1
-        })
-        
-        tween:Play()
-        tween.Completed:Connect(function()
-            ripple:Destroy()
-        end)
-        
-        return ripple
+    -- Morphing animation
+    Morph = function(object, targetProperties, duration, style)
+        local info = TweenInfo.new(
+            duration or 0.5,
+            style or Enum.EasingStyle.Quad,
+            Enum.EasingDirection.Out
+        )
+        return TweenService:Create(object, info, targetProperties)
     end
+}
+
+-- Enhanced Icon System with Unicode
+LRDLibrary.Icons = {
+    -- Basic Icons
+    Home = "🏠",
+    Settings = "⚙️",
+    User = "👤",
+    Search = "🔍",
+    Bell = "🔔",
+    Star = "⭐",
+    Heart = "❤️",
+    Plus = "➕",
+    Minus = "➖",
+    Check = "✅",
+    X = "❌",
+    Arrow = "➡️",
+    Download = "⬇️",
+    Upload = "⬆️",
+    Play = "▶️",
+    Pause = "⏸️",
+    Stop = "⏹️",
+    
+    -- Advanced Icons
+    Code = "💻",
+    Terminal = "🖥️",
+    Database = "🗄️",
+    Cloud = "☁️",
+    Lock = "🔒",
+    Unlock = "🔓",
+    Key = "🔑",
+    Shield = "🛡️",
+    Lightning = "⚡",
+    Fire = "🔥",
+    Water = "💧",
+    Earth = "🌍",
+    Moon = "🌙",
+    Sun = "☀️",
+    
+    -- UI Icons
+    Menu = "☰",
+    Grid = "▦",
+    List = "☰",
+    Card = "🃏",
+    Chart = "📊",
+    Graph = "📈",
+    Pie = "🥧",
+    Calendar = "📅",
+    Clock = "🕐",
+    Timer = "⏱️",
+    
+    -- Status Icons
+    Success = "✅",
+    Warning = "⚠️",
+    Error = "❌",
+    Info = "ℹ️",
+    Question = "❓",
+    Exclamation = "❗",
+    
+    -- Navigation Icons
+    Back = "⬅️",
+    Forward = "➡️",
+    Up = "⬆️",
+    Down = "⬇️",
+    Refresh = "🔄",
+    Sync = "🔄",
+    
+    -- Media Icons
+    Volume = "🔊",
+    Mute = "🔇",
+    Camera = "📷",
+    Video = "📹",
+    Image = "🖼️",
+    Music = "🎵"
 }
 
 -- Advanced utility functions
@@ -445,8 +575,8 @@ local function playSound(soundId, volume, pitch)
     
     local sound = Instance.new("Sound")
     sound.SoundId = soundId
-    sound.Volume = volume or 0.3
-    sound.Pitch = pitch or 1
+    sound.Volume = volume or 0.5
+    sound.PlaybackSpeed = pitch or 1
     sound.Parent = SoundService
     sound:Play()
     
@@ -474,6 +604,18 @@ local function round(number, decimalPlaces)
     return math.floor(number * multiplier + 0.5) / multiplier
 end
 
+local function formatNumber(num)
+    if num >= 1000000000 then
+        return string.format("%.1fB", num / 1000000000)
+    elseif num >= 1000000 then
+        return string.format("%.1fM", num / 1000000)
+    elseif num >= 1000 then
+        return string.format("%.1fK", num / 1000)
+    else
+        return tostring(num)
+    end
+end
+
 local function interpolateColor(color1, color2, t)
     return Color3.new(
         lerp(color1.R, color2.R, t),
@@ -482,17 +624,36 @@ local function interpolateColor(color1, color2, t)
     )
 end
 
--- Enhanced GUI Creation Functions
+local function hexToColor3(hex)
+    hex = hex:gsub("#", "")
+    return Color3.fromRGB(
+        tonumber("0x" .. hex:sub(1, 2)),
+        tonumber("0x" .. hex:sub(3, 4)),
+        tonumber("0x" .. hex:sub(5, 6))
+    )
+end
+
+local function color3ToHex(color)
+    return string.format("#%02X%02X%02X", 
+        math.floor(color.R * 255),
+        math.floor(color.G * 255),
+        math.floor(color.B * 255)
+    )
+end
+
+-- Create Screen GUI with advanced effects
 local function createScreenGui(name)
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = name
     screenGui.ResetOnSpawn = false
     screenGui.IgnoreGuiInset = true
     screenGui.DisplayOrder = 100
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
+    -- Add blur effect if enabled
     if LRDLibrary.Config.BlurBackground then
         local blur = Instance.new("BlurEffect")
-        blur.Size = 15
+        blur.Size = LRDLibrary.Theme.BlurIntensity or 15
         blur.Parent = Lighting
         
         screenGui.AncestryChanged:Connect(function()
@@ -506,6 +667,7 @@ local function createScreenGui(name)
     return screenGui
 end
 
+-- Enhanced utility functions
 local function tween(object, tweenInfo, properties, callback)
     local tweenObj = TweenService:Create(object, tweenInfo, properties)
     tweenObj:Play()
@@ -521,6 +683,7 @@ local function createFrame(properties)
     local frame = Instance.new("Frame")
     frame.BackgroundColor3 = LRDLibrary.Theme.Background
     frame.BorderSizePixel = 0
+    frame.Size = UDim2.new(1, 0, 1, 0)
     
     for prop, value in pairs(properties or {}) do
         frame[prop] = value
@@ -536,6 +699,8 @@ local function createTextLabel(properties)
     label.TextColor3 = LRDLibrary.Theme.TextColor
     label.TextScaled = false
     label.TextWrapped = true
+    label.TextSize = 14
+    label.Size = UDim2.new(1, 0, 1, 0)
     
     for prop, value in pairs(properties or {}) do
         label[prop] = value
@@ -550,6 +715,21 @@ local function createTextButton(properties)
     button.Font = Enum.Font.Gotham
     button.TextColor3 = LRDLibrary.Theme.TextColor
     button.AutoButtonColor = false
+    button.TextSize = 14
+    button.Size = UDim2.new(1, 0, 1, 0)
+    
+    for prop, value in pairs(properties or {}) do
+        button[prop] = value
+    end
+    
+    return button
+end
+
+local function createImageButton(properties)
+    local button = Instance.new("ImageButton")
+    button.BackgroundTransparency = 1
+    button.AutoButtonColor = false
+    button.Size = UDim2.new(1, 0, 1, 0)
     
     for prop, value in pairs(properties or {}) do
         button[prop] = value
@@ -561,6 +741,7 @@ end
 local function createImageLabel(properties)
     local image = Instance.new("ImageLabel")
     image.BackgroundTransparency = 1
+    image.Size = UDim2.new(1, 0, 1, 0)
     
     for prop, value in pairs(properties or {}) do
         image[prop] = value
@@ -575,6 +756,8 @@ local function createTextBox(properties)
     textBox.Font = Enum.Font.Gotham
     textBox.TextColor3 = LRDLibrary.Theme.TextColor
     textBox.ClearTextOnFocus = false
+    textBox.TextSize = 14
+    textBox.Size = UDim2.new(1, 0, 1, 0)
     
     for prop, value in pairs(properties or {}) do
         textBox[prop] = value
@@ -583,7 +766,7 @@ local function createTextBox(properties)
     return textBox
 end
 
--- Enhanced UI Element Creation
+-- Enhanced UI element creators
 local function addCorner(parent, radius)
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, radius or 12)
@@ -600,13 +783,14 @@ local function addStroke(parent, color, thickness, transparency)
     return stroke
 end
 
-local function addGradient(parent, colors, rotation)
+local function addGradient(parent, colors, rotation, transparency)
     local gradient = Instance.new("UIGradient")
     gradient.Color = colors or ColorSequence.new{
         ColorSequenceKeypoint.new(0, LRDLibrary.Theme.Primary),
         ColorSequenceKeypoint.new(1, LRDLibrary.Theme.PrimaryHover)
     }
     gradient.Rotation = rotation or 0
+    gradient.Transparency = transparency or NumberSequence.new(0)
     gradient.Parent = parent
     return gradient
 end
@@ -618,38 +802,53 @@ local function addShadow(parent, size, transparency, color)
         Position = UDim2.new(0, -(size or 20)/2, 0, -(size or 20)/2),
         BackgroundColor3 = color or Color3.fromRGB(0, 0, 0),
         BackgroundTransparency = transparency or 0.7,
-        ZIndex = parent.ZIndex - 1,
+        ZIndex = (parent.ZIndex or 1) - 1,
         Parent = parent.Parent
     })
     addCorner(shadow, (size or 20)/2)
     return shadow
 end
 
-local function addGlassmorphism(parent, transparency, blur)
+-- Advanced Glassmorphism Effect
+local function addGlassmorphism(parent, intensity)
     if not LRDLibrary.Config.GlassmorphismEnabled then return end
     
-    transparency = transparency or 0.1
-    blur = blur or 10
-    
-    -- Create glass effect background
-    local glassFrame = createFrame({
+    local glass = createFrame({
         Name = "GlassEffect",
         Size = UDim2.new(1, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
-        BackgroundColor3 = LRDLibrary.Theme.BackgroundGlass,
-        BackgroundTransparency = transparency,
-        ZIndex = parent.ZIndex - 1,
+        BackgroundColor3 = LRDLibrary.Theme.GlassBackground,
+        BackgroundTransparency = LRDLibrary.Theme.GlassTransparency or 0.9,
+        ZIndex = parent.ZIndex + 1,
         Parent = parent
     })
     
-    addCorner(glassFrame, 12)
-    addStroke(glassFrame, Color3.fromRGB(255, 255, 255), 1, 0.8)
+    addCorner(glass, 12)
+    addStroke(glass, Color3.fromRGB(255, 255, 255), 1, 0.8)
     
-    return glassFrame
+    -- Add subtle gradient
+    local gradient = addGradient(glass, ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 255))
+    }, 45, NumberSequence.new{
+        NumberSequenceKeypoint.new(0, 0.95),
+        NumberSequenceKeypoint.new(1, 0.98)
+    })
+    
+    return glass
 end
 
-local function addRippleEffect(parent)
+-- Advanced Ripple Effect System
+local function addRipple(parent, color)
     if not LRDLibrary.Config.RippleEffects then return end
+    
+    local rippleContainer = createFrame({
+        Name = "RippleContainer",
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        ClipsDescendants = true,
+        ZIndex = parent.ZIndex + 2,
+        Parent = parent
+    })
     
     parent.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -657,12 +856,87 @@ local function addRippleEffect(parent)
             local parentPos = parent.AbsolutePosition
             local parentSize = parent.AbsoluteSize
             
-            local relativeX = (mousePos.X - parentPos.X) / parentSize.X
-            local relativeY = (mousePos.Y - parentPos.Y) / parentSize.Y
+            local relativeX = mousePos.X - parentPos.X
+            local relativeY = mousePos.Y - parentPos.Y
             
-            LRDLibrary.Particles.CreateRipple(parent, UDim2.new(relativeX, 0, relativeY, 0), LRDLibrary.Theme.Primary)
+            local ripple = createFrame({
+                Name = "Ripple",
+                Size = UDim2.new(0, 0, 0, 0),
+                Position = UDim2.new(0, relativeX, 0, relativeY),
+                BackgroundColor3 = color or Color3.fromRGB(255, 255, 255),
+                BackgroundTransparency = 0.7,
+                ZIndex = rippleContainer.ZIndex + 1,
+                Parent = rippleContainer
+            })
+            addCorner(ripple, 100)
+            
+            local maxSize = math.max(parentSize.X, parentSize.Y) * 2.5
+            
+            -- Animate ripple expansion
+            local expandTween = tween(ripple, 
+                TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), 
+                {
+                    Size = UDim2.new(0, maxSize, 0, maxSize),
+                    Position = UDim2.new(0, relativeX - maxSize/2, 0, relativeY - maxSize/2),
+                    BackgroundTransparency = 1
+                }
+            )
+            
+            expandTween.Completed:Connect(function()
+                ripple:Destroy()
+            end)
+            
+            -- Play ripple sound
+            playSound(LRDLibrary.Sounds.Pop, 0.3, 1.2)
         end
     end)
+    
+    return rippleContainer
+end
+
+-- Particle Effect System
+local function createParticleEffect(parent, particleType, duration)
+    if not LRDLibrary.Config.ParticleEffects then return end
+    
+    local particles = {}
+    local particleCount = particleType == "confetti" and 20 or 10
+    
+    for i = 1, particleCount do
+        local particle = createFrame({
+            Name = "Particle",
+            Size = UDim2.new(0, math.random(3, 8), 0, math.random(3, 8)),
+            Position = UDim2.new(0.5, math.random(-50, 50), 0.5, math.random(-50, 50)),
+            BackgroundColor3 = Color3.fromHSV(math.random(), 0.8, 1),
+            ZIndex = parent.ZIndex + 10,
+            Parent = parent
+        })
+        addCorner(particle, 50)
+        
+        -- Animate particle
+        local endPos = UDim2.new(
+            math.random(0, 100) / 100,
+            math.random(-100, 100),
+            math.random(0, 100) / 100,
+            math.random(-100, 100)
+        )
+        
+        local moveTween = tween(particle,
+            TweenInfo.new(duration or 2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Position = endPos,
+                BackgroundTransparency = 1,
+                Rotation = math.random(0, 360)
+            }
+        )
+        
+        moveTween.Completed:Connect(function()
+            particle:Destroy()
+        end)
+        
+        table.insert(particles, particle)
+    end
+    
+    return particles
 end
 
 -- Advanced Notification System
@@ -713,44 +987,44 @@ function LRDLibrary:Notify(settings)
     addCorner(notification, 16)
     addStroke(notification, typeColors[notificationType] or LRDLibrary.Theme.NotificationBorder, 2, 0.3)
     addShadow(notification, 15, 0.4)
-    addGlassmorphism(notification, 0.05)
+    addGlassmorphism(notification)
 
-    -- Icon with glow effect
-    local iconFrame = createFrame({
+    -- Icon with background
+    local iconBg = createFrame({
         Size = UDim2.new(0, 40, 0, 40),
         Position = UDim2.new(0, 20, 0, 20),
         BackgroundColor3 = typeColors[notificationType] or LRDLibrary.Theme.Primary,
+        BackgroundTransparency = 0.1,
         Parent = notification
     })
-    addCorner(iconFrame, 20)
-    
-    local iconLabel = createTextLabel({
+    addCorner(iconBg, 20)
+
+    local icon = createTextLabel({
         Size = UDim2.new(1, 0, 1, 0),
-        Text = notificationType == "Success" and "✓" or notificationType == "Warning" and "⚠" or notificationType == "Error" and "✕" or "ℹ",
+        Text = LRDLibrary.Icons[notificationType] or LRDLibrary.Icons.Bell,
         TextSize = 20,
-        Font = Enum.Font.GothamBold,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Parent = iconFrame
+        TextColor3 = typeColors[notificationType] or LRDLibrary.Theme.Primary,
+        Parent = iconBg
     })
 
-    -- Title with enhanced typography
+    -- Title with enhanced styling
     local title = createTextLabel({
-        Size = UDim2.new(1, -100, 0, 30),
+        Size = UDim2.new(1, -100, 0, 25),
         Position = UDim2.new(0, 75, 0, 15),
         Text = settings.Title or "Notification",
         TextSize = 16,
         Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
+        TextColor3 = LRDLibrary.Theme.TextColor,
         Parent = notification
     })
 
-    -- Content with better spacing
+    -- Content with better formatting
     local content = createTextLabel({
         Size = UDim2.new(1, -75, 0, 60),
-        Position = UDim2.new(0, 75, 0, 45),
+        Position = UDim2.new(0, 75, 0, 40),
         Text = settings.Content or "No content provided",
         TextSize = 14,
-        Font = Enum.Font.Gotham,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextYAlignment = Enum.TextYAlignment.Top,
         TextWrapped = true,
@@ -758,12 +1032,12 @@ function LRDLibrary:Notify(settings)
         Parent = notification
     })
 
-    -- Enhanced close button
+    -- Close button with hover effect
     local closeButton = createTextButton({
         Size = UDim2.new(0, 30, 0, 30),
         Position = UDim2.new(1, -40, 0, 10),
-        Text = "×",
-        TextSize = 18,
+        Text = LRDLibrary.Icons.X,
+        TextSize = 16,
         Font = Enum.Font.GothamBold,
         TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
         BackgroundColor3 = LRDLibrary.Theme.ElementBackground,
@@ -771,32 +1045,40 @@ function LRDLibrary:Notify(settings)
         Parent = notification
     })
     addCorner(closeButton, 15)
+    addRipple(closeButton)
 
     -- Progress bar with gradient
-    local progressBar = createFrame({
+    local progressBg = createFrame({
         Size = UDim2.new(1, 0, 0, 4),
         Position = UDim2.new(0, 0, 1, -4),
-        BackgroundColor3 = typeColors[notificationType] or LRDLibrary.Theme.Primary,
+        BackgroundColor3 = LRDLibrary.Theme.ElementBackground,
         BorderSizePixel = 0,
         Parent = notification
     })
-    addCorner(progressBar, 2)
+
+    local progressBar = createFrame({
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundColor3 = typeColors[notificationType] or LRDLibrary.Theme.Primary,
+        BorderSizePixel = 0,
+        Parent = progressBg
+    })
     addGradient(progressBar, ColorSequence.new{
         ColorSequenceKeypoint.new(0, typeColors[notificationType] or LRDLibrary.Theme.Primary),
         ColorSequenceKeypoint.new(1, typeColors[notificationType] or LRDLibrary.Theme.PrimaryHover)
-    }, 90)
+    })
 
-    -- Enhanced animations
+    -- Entrance animation
     notification.Position = UDim2.new(1, 50, 0, 0)
-    LRDLibrary.Animations.SlideIn(notification, "Left", 0.6)
-    LRDLibrary.Animations.Spring(iconFrame, {Size = UDim2.new(0, 40, 0, 40)}, 0.6, 8)
+    notification.BackgroundTransparency = 1
+    
+    LRDLibrary.Animations.SlideIn(notification, "Left", 0.5, Enum.EasingStyle.Back):Play()
+    LRDLibrary.Animations.FadeIn(notification, 0.3):Play()
 
-    -- Sound with variation
-    local soundVariation = math.random(80, 120) / 100
-    playSound(LRDLibrary.Sounds.Notification, 0.4, soundVariation)
+    -- Sound effect
+    playSound(LRDLibrary.Sounds.Notification, 0.6, 1)
 
-    -- Auto-remove with smooth animation
-    local duration = settings.Duration or 6
+    -- Auto-remove functionality with smooth progress
+    local duration = settings.Duration or 5
     local startTime = tick()
     
     local connection
@@ -807,10 +1089,12 @@ function LRDLibrary:Notify(settings)
         if progress >= 1 then
             connection:Disconnect()
             
-            LRDLibrary.Animations.SlideIn(notification, "Right", 0.4)
-            LRDLibrary.Animations.FadeOut(notification, 0.4, function()
-                notification:Destroy()
-            end)
+            -- Exit animation
+            LRDLibrary.Animations.SlideIn(notification, "Right", 0.4):Play()
+            LRDLibrary.Animations.FadeOut(notification, 0.3):Play()
+            
+            task.wait(0.4)
+            notification:Destroy()
             
             -- Remove from notifications table
             for i, notif in ipairs(notifications) do
@@ -820,21 +1104,19 @@ function LRDLibrary:Notify(settings)
                 end
             end
         else
-            progressBar.Size = UDim2.new(1 - progress, 0, 0, 4)
+            progressBar.Size = UDim2.new(1 - progress, 0, 1, 0)
         end
     end)
 
-    -- Close button functionality with animation
+    -- Close button functionality
     closeButton.MouseButton1Click:Connect(function()
         connection:Disconnect()
         
-        LRDLibrary.Animations.Bounce(closeButton, 5, 0.1)
-        playSound(LRDLibrary.Sounds.Click, 0.3)
+        LRDLibrary.Animations.SlideIn(notification, "Right", 0.3):Play()
+        LRDLibrary.Animations.FadeOut(notification, 0.2):Play()
         
-        LRDLibrary.Animations.SlideIn(notification, "Right", 0.4)
-        LRDLibrary.Animations.FadeOut(notification, 0.4, function()
-            notification:Destroy()
-        end)
+        task.wait(0.3)
+        notification:Destroy()
         
         for i, notif in ipairs(notifications) do
             if notif.id == notificationId then
@@ -842,15 +1124,23 @@ function LRDLibrary:Notify(settings)
                 break
             end
         end
+        
+        playSound(LRDLibrary.Sounds.Click, 0.4)
     end)
 
     -- Hover effects
     closeButton.MouseEnter:Connect(function()
-        tween(closeButton, TweenInfo.new(0.2), {BackgroundTransparency = 0.1})
+        tween(closeButton, TweenInfo.new(0.2), {
+            BackgroundTransparency = 0.1,
+            TextColor3 = LRDLibrary.Theme.Error
+        })
     end)
 
     closeButton.MouseLeave:Connect(function()
-        tween(closeButton, TweenInfo.new(0.2), {BackgroundTransparency = 0.3})
+        tween(closeButton, TweenInfo.new(0.2), {
+            BackgroundTransparency = 0.3,
+            TextColor3 = LRDLibrary.Theme.SecondaryTextColor
+        })
     end)
 
     -- Add to notifications table
@@ -864,13 +1154,137 @@ function LRDLibrary:Notify(settings)
     return notificationId
 end
 
+-- Enhanced Context Menu System
+local ContextMenu = {}
+
+function LRDLibrary:CreateContextMenu(items)
+    local contextMenu = createFrame({
+        Name = "ContextMenu",
+        Size = UDim2.new(0, 220, 0, #items * 40 + 16),
+        BackgroundColor3 = LRDLibrary.Theme.ElementBackground,
+        BorderSizePixel = 0,
+        Visible = false,
+        ZIndex = 999,
+        Parent = createScreenGui("LRD_ContextMenu")
+    })
+    
+    addCorner(contextMenu, 12)
+    addStroke(contextMenu, LRDLibrary.Theme.ElementStroke, 1, 0.5)
+    addShadow(contextMenu, 20, 0.6)
+    addGlassmorphism(contextMenu)
+
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Padding = UDim.new(0, 4)
+    layout.Parent = contextMenu
+
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 8)
+    padding.PaddingBottom = UDim.new(0, 8)
+    padding.PaddingLeft = UDim.new(0, 8)
+    padding.PaddingRight = UDim.new(0, 8)
+    padding.Parent = contextMenu
+
+    for i, item in ipairs(items) do
+        local menuItem = createTextButton({
+            Size = UDim2.new(1, 0, 0, 36),
+            BackgroundColor3 = LRDLibrary.Theme.ElementBackground,
+            BackgroundTransparency = 1,
+            Text = "",
+            LayoutOrder = i,
+            Parent = contextMenu
+        })
+        
+        addCorner(menuItem, 8)
+        addRipple(menuItem)
+
+        -- Icon
+        if item.Icon then
+            local icon = createTextLabel({
+                Size = UDim2.new(0, 20, 0, 20),
+                Position = UDim2.new(0, 12, 0.5, -10),
+                Text = item.Icon,
+                TextSize = 16,
+                TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
+                Parent = menuItem
+            })
+        end
+
+        -- Text
+        local text = createTextLabel({
+            Size = UDim2.new(1, item.Icon and -50 or -20, 1, 0),
+            Position = UDim2.new(0, item.Icon and 40 or 12, 0, 0),
+            Text = item.Text,
+            TextSize = 14,
+            TextXAlignment = Enum.TextXAlignment.Left,
+            TextColor3 = LRDLibrary.Theme.TextColor,
+            Parent = menuItem
+        })
+
+        -- Hover effects
+        menuItem.MouseEnter:Connect(function()
+            tween(menuItem, TweenInfo.new(0.2), {
+                BackgroundColor3 = LRDLibrary.Theme.ElementBackgroundHover,
+                BackgroundTransparency = 0.3
+            })
+            playSound(LRDLibrary.Sounds.Hover, 0.3)
+        end)
+
+        menuItem.MouseLeave:Connect(function()
+            tween(menuItem, TweenInfo.new(0.2), {
+                BackgroundTransparency = 1
+            })
+        end)
+
+        menuItem.MouseButton1Click:Connect(function()
+            if item.Callback then
+                item.Callback()
+            end
+            ContextMenu:Hide()
+            playSound(LRDLibrary.Sounds.Click, 0.5)
+        end)
+    end
+
+    function ContextMenu:Show(position)
+        contextMenu.Position = UDim2.new(0, position.X, 0, position.Y)
+        contextMenu.Visible = true
+        
+        LRDLibrary.Animations.ScaleIn(contextMenu, contextMenu.Size, 0.3):Play()
+        LRDLibrary.Animations.FadeIn(contextMenu, 0.2):Play()
+        
+        playSound(LRDLibrary.Sounds.Whoosh, 0.4)
+    end
+
+    function ContextMenu:Hide()
+        LRDLibrary.Animations.FadeOut(contextMenu, 0.2):Play()
+        task.wait(0.2)
+        contextMenu.Visible = false
+    end
+
+    -- Hide on click outside
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 and contextMenu.Visible then
+            local mousePos = UserInputService:GetMouseLocation()
+            local menuPos = contextMenu.AbsolutePosition
+            local menuSize = contextMenu.AbsoluteSize
+            
+            if mousePos.X < menuPos.X or mousePos.X > menuPos.X + menuSize.X or
+               mousePos.Y < menuPos.Y or mousePos.Y > menuPos.Y + menuSize.Y then
+                ContextMenu:Hide()
+            end
+        end
+    end)
+
+    return ContextMenu
+end
+
 -- Enhanced Tooltip System
-function LRDLibrary:CreateTooltip(parent, text, delay)
+function LRDLibrary:CreateTooltip(parent, text, delay, position)
     if not LRDLibrary.Config.Tooltips then return end
     
     local tooltip = createFrame({
         Name = "Tooltip",
-        Size = UDim2.new(0, 0, 0, 35),
+        Size = UDim2.new(0, 0, 0, 36),
         BackgroundColor3 = LRDLibrary.Theme.ElementBackground,
         BorderSizePixel = 0,
         Visible = false,
@@ -880,35 +1294,49 @@ function LRDLibrary:CreateTooltip(parent, text, delay)
     
     addCorner(tooltip, 8)
     addStroke(tooltip, LRDLibrary.Theme.ElementStroke, 1, 0.5)
-    addShadow(tooltip, 10, 0.6)
-    addGlassmorphism(tooltip, 0.1)
+    addShadow(tooltip, 8, 0.5)
+    addGlassmorphism(tooltip)
 
     local label = createTextLabel({
         Size = UDim2.new(1, -16, 1, 0),
         Position = UDim2.new(0, 8, 0, 0),
         Text = text,
-        TextSize = 13,
-        Font = Enum.Font.Gotham,
+        TextSize = 12,
         TextXAlignment = Enum.TextXAlignment.Center,
+        TextColor3 = LRDLibrary.Theme.TextColor,
         Parent = tooltip
     })
 
-    -- Calculate text size for better fitting
-    local textBounds = TextService:GetTextSize(text, 13, Enum.Font.Gotham, Vector2.new(math.huge, 35))
-    tooltip.Size = UDim2.new(0, textBounds.X + 20, 0, 35)
+    -- Calculate text size
+    local textBounds = TextService:GetTextSize(text, 12, Enum.Font.Gotham, Vector2.new(math.huge, 36))
+    tooltip.Size = UDim2.new(0, textBounds.X + 16, 0, 36)
 
     local hoverConnection
     local leaveConnection
     local showTimer
 
     hoverConnection = parent.MouseEnter:Connect(function()
-        showTimer = task.delay(delay or 0.8, function()
+        showTimer = task.delay(delay or 0.5, function()
             local mousePos = UserInputService:GetMouseLocation()
-            tooltip.Position = UDim2.new(0, mousePos.X + 15, 0, mousePos.Y - 45)
+            local offsetX, offsetY = 10, -46
+            
+            if position == "top" then
+                offsetY = -46
+            elseif position == "bottom" then
+                offsetY = 10
+            elseif position == "left" then
+                offsetX = -tooltip.AbsoluteSize.X - 10
+                offsetY = -18
+            elseif position == "right" then
+                offsetX = 10
+                offsetY = -18
+            end
+            
+            tooltip.Position = UDim2.new(0, mousePos.X + offsetX, 0, mousePos.Y + offsetY)
             tooltip.Visible = true
             
-            LRDLibrary.Animations.FadeIn(tooltip, 0.3)
-            LRDLibrary.Animations.Spring(tooltip, {Size = tooltip.Size}, 0.7, 6)
+            LRDLibrary.Animations.ScaleIn(tooltip, tooltip.Size, 0.2):Play()
+            LRDLibrary.Animations.FadeIn(tooltip, 0.15):Play()
         end)
     end)
 
@@ -918,9 +1346,9 @@ function LRDLibrary:CreateTooltip(parent, text, delay)
         end
         
         if tooltip.Visible then
-            LRDLibrary.Animations.FadeOut(tooltip, 0.2, function()
-                tooltip.Visible = false
-            end)
+            LRDLibrary.Animations.FadeOut(tooltip, 0.15):Play()
+            task.wait(0.15)
+            tooltip.Visible = false
         end
     end)
 
@@ -936,7 +1364,7 @@ function LRDLibrary:CreateTooltip(parent, text, delay)
     return tooltip
 end
 
--- Configuration System
+-- Configuration System with DataStore support
 local function saveConfig()
     if not LRDLibrary.Config.SaveConfig then return end
     
@@ -952,6 +1380,7 @@ local function saveConfig()
         GlassmorphismEnabled = LRDLibrary.Config.GlassmorphismEnabled
     }
     
+    -- Store locally (in production, use DataStoreService)
     _G.LRDConfig = data
 end
 
@@ -986,6 +1415,9 @@ function LRDLibrary:SetTheme(themeName)
             LRDLibrary.OnThemeChanged(themeName)
         end
         
+        -- Create theme transition effect
+        createParticleEffect(PlayerGui, "confetti", 1.5)
+        
         return true
     end
     return false
@@ -993,6 +1425,14 @@ end
 
 function LRDLibrary:AddTheme(name, theme)
     LRDLibrary.Themes[name] = theme
+end
+
+function LRDLibrary:GetThemes()
+    local themeList = {}
+    for name, theme in pairs(LRDLibrary.Themes) do
+        table.insert(themeList, {Name = name, DisplayName = theme.Name})
+    end
+    return themeList
 end
 
 -- Main Library Functions
@@ -1003,24 +1443,25 @@ function LRDLibrary:CreateWindow(settings)
     Window.Name = settings.Name or "LRD.dev Interface"
     Window.Tabs = {}
     Window.Settings = settings
+    Window.Minimized = false
 
-    -- Create main GUI with enhanced effects
+    -- Create main GUI
     local screenGui = createScreenGui("LRD_Interface_" .. generateUUID())
 
     -- Main frame with glassmorphism
     local mainFrame = createFrame({
         Name = "MainFrame",
-        Size = UDim2.new(0, settings.Size and settings.Size.X or 750, 0, settings.Size and settings.Size.Y or 550),
-        Position = UDim2.new(0.5, -(settings.Size and settings.Size.X or 750)/2, 0.5, -(settings.Size and settings.Size.Y or 550)/2),
+        Size = UDim2.new(0, settings.Size and settings.Size.X or 800, 0, settings.Size and settings.Size.Y or 600),
+        Position = UDim2.new(0.5, -(settings.Size and settings.Size.X or 800)/2, 0.5, -(settings.Size and settings.Size.Y or 600)/2),
         BackgroundColor3 = LRDLibrary.Theme.Background,
         BorderSizePixel = 0,
         ClipsDescendants = true,
         Parent = screenGui
     })
 
-    addCorner(mainFrame, 20)
-    addShadow(mainFrame, 40, 0.3)
-    addGlassmorphism(mainFrame, 0.05)
+    addCorner(mainFrame, 16)
+    addShadow(mainFrame, 40, 0.5)
+    addGlassmorphism(mainFrame)
 
     -- Enhanced topbar with gradient
     local topbar = createFrame({
@@ -1030,50 +1471,49 @@ function LRDLibrary:CreateWindow(settings)
         BorderSizePixel = 0,
         Parent = mainFrame
     })
-    addCorner(topbar, 20)
+    addCorner(topbar, 16)
     addGradient(topbar, ColorSequence.new{
         ColorSequenceKeypoint.new(0, LRDLibrary.Theme.Topbar),
         ColorSequenceKeypoint.new(1, LRDLibrary.Theme.SecondaryBackground)
     }, 90)
 
-    -- Window icon with glow
-    local windowIcon = createFrame({
-        Size = UDim2.new(0, 35, 0, 35),
-        Position = UDim2.new(0, 25, 0.5, -17.5),
-        BackgroundColor3 = LRDLibrary.Theme.Primary,
+    -- Window icon with glow effect
+    local windowIcon = createTextLabel({
+        Size = UDim2.new(0, 32, 0, 32),
+        Position = UDim2.new(0, 25, 0.5, -16),
+        Text = settings.Icon or LRDLibrary.Icons.Terminal,
+        TextSize = 24,
+        TextColor3 = LRDLibrary.Theme.Primary,
         Parent = topbar
     })
-    addCorner(windowIcon, 17.5)
 
-    local iconText = createTextLabel({
-        Size = UDim2.new(1, 0, 1, 0),
-        Text = "⚡",
+    -- Enhanced title with subtitle
+    local titleContainer = createFrame({
+        Size = UDim2.new(1, -300, 1, 0),
+        Position = UDim2.new(0, 70, 0, 0),
+        BackgroundTransparency = 1,
+        Parent = topbar
+    })
+
+    local title = createTextLabel({
+        Size = UDim2.new(1, 0, 0, 25),
+        Position = UDim2.new(0, 0, 0, 12),
+        Text = Window.Name,
         TextSize = 18,
         Font = Enum.Font.GothamBold,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Parent = windowIcon
-    })
-
-    -- Enhanced title
-    local title = createTextLabel({
-        Size = UDim2.new(1, -250, 1, 0),
-        Position = UDim2.new(0, 75, 0, 0),
-        Text = Window.Name,
-        TextSize = 20,
-        Font = Enum.Font.GothamBold,
         TextXAlignment = Enum.TextXAlignment.Left,
-        Parent = topbar
+        TextColor3 = LRDLibrary.Theme.TextColor,
+        Parent = titleContainer
     })
 
     local subtitle = createTextLabel({
-        Size = UDim2.new(1, -250, 0, 20),
-        Position = UDim2.new(0, 75, 0, 35),
-        Text = "Premium Edition v" .. LRDLibrary.Version,
+        Size = UDim2.new(1, 0, 0, 15),
+        Position = UDim2.new(0, 0, 0, 35),
+        Text = settings.Subtitle or "Premium Edition v" .. LRDLibrary.Version,
         TextSize = 12,
-        Font = Enum.Font.Gotham,
         TextXAlignment = Enum.TextXAlignment.Left,
         TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
-        Parent = topbar
+        Parent = titleContainer
     })
 
     -- Enhanced window controls
@@ -1084,35 +1524,63 @@ function LRDLibrary:CreateWindow(settings)
         Parent = topbar
     })
 
-    local function createControlButton(text, color, position)
-        local button = createTextButton({
-            Size = UDim2.new(0, 35, 0, 35),
-            Position = position,
-            Text = text,
-            TextSize = 16,
-            Font = Enum.Font.GothamBold,
-            BackgroundColor3 = color,
-            Parent = controlsFrame
-        })
-        addCorner(button, 17.5)
-        addRippleEffect(button)
-        
+    -- Minimize button
+    local minimizeButton = createTextButton({
+        Size = UDim2.new(0, 35, 0, 35),
+        Position = UDim2.new(0, 0, 0, 0),
+        Text = LRDLibrary.Icons.Minus,
+        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        BackgroundColor3 = LRDLibrary.Theme.ElementBackground,
+        BackgroundTransparency = 0.3,
+        TextColor3 = LRDLibrary.Theme.TextColor,
+        Parent = controlsFrame
+    })
+    addCorner(minimizeButton, 8)
+    addRipple(minimizeButton)
+
+    -- Settings button
+    local settingsButton = createTextButton({
+        Size = UDim2.new(0, 35, 0, 35),
+        Position = UDim2.new(0, 40, 0, 0),
+        Text = LRDLibrary.Icons.Settings,
+        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        BackgroundColor3 = LRDLibrary.Theme.ElementBackground,
+        BackgroundTransparency = 0.3,
+        TextColor3 = LRDLibrary.Theme.TextColor,
+        Parent = controlsFrame
+    })
+    addCorner(settingsButton, 8)
+    addRipple(settingsButton)
+
+    -- Close button
+    local closeButton = createTextButton({
+        Size = UDim2.new(0, 35, 0, 35),
+        Position = UDim2.new(0, 80, 0, 0),
+        Text = LRDLibrary.Icons.X,
+        TextSize = 16,
+        Font = Enum.Font.GothamBold,
+        BackgroundColor3 = LRDLibrary.Theme.Error,
+        BackgroundTransparency = 0.3,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Parent = controlsFrame
+    })
+    addCorner(closeButton, 8)
+    addRipple(closeButton)
+
+    -- Add enhanced hover effects to control buttons
+    for _, button in pairs({minimizeButton, settingsButton, closeButton}) do
         button.MouseEnter:Connect(function()
-            LRDLibrary.Animations.Spring(button, {Size = UDim2.new(0, 38, 0, 38)}, 0.7, 8)
+            LRDLibrary.Animations.Pulse(button, 0.1, 0.2):Play()
             tween(button, TweenInfo.new(0.2), {BackgroundTransparency = 0.1})
+            playSound(LRDLibrary.Sounds.Hover, 0.3)
         end)
         
         button.MouseLeave:Connect(function()
-            LRDLibrary.Animations.Spring(button, {Size = UDim2.new(0, 35, 0, 35)}, 0.7, 8)
-            tween(button, TweenInfo.new(0.2), {BackgroundTransparency = 0})
+            tween(button, TweenInfo.new(0.2), {BackgroundTransparency = 0.3})
         end)
-        
-        return button
     end
-
-    local minimizeButton = createControlButton("−", LRDLibrary.Theme.ElementBackground, UDim2.new(0, 0, 0, 0))
-    local settingsButton = createControlButton("⚙", LRDLibrary.Theme.ElementBackground, UDim2.new(0, 40, 0, 0))
-    local closeButton = createControlButton("×", LRDLibrary.Theme.Error, UDim2.new(0, 80, 0, 0))
 
     -- Enhanced tab container
     local tabContainer = createFrame({
@@ -1123,8 +1591,8 @@ function LRDLibrary:CreateWindow(settings)
         BorderSizePixel = 0,
         Parent = mainFrame
     })
-    addCorner(tabContainer, 15)
-    addGlassmorphism(tabContainer, 0.1)
+    addCorner(tabContainer, 12)
+    addGlassmorphism(tabContainer)
 
     local tabScrollFrame = Instance.new("ScrollingFrame")
     tabScrollFrame.Name = "TabScroll"
@@ -1138,20 +1606,21 @@ function LRDLibrary:CreateWindow(settings)
 
     local tabLayout = Instance.new("UIListLayout")
     tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    tabLayout.Padding = UDim.new(0, 10)
+    tabLayout.Padding = UDim.new(0, 8)
     tabLayout.Parent = tabScrollFrame
 
     local tabPadding = Instance.new("UIPadding")
     tabPadding.PaddingTop = UDim.new(0, 20)
-    tabPadding.PaddingLeft = UDim.new(0, 20)
-    tabPadding.PaddingRight = UDim.new(0, 20)
+    tabPadding.PaddingLeft = UDim.new(0, 15)
+    tabPadding.PaddingRight = UDim.new(0, 15)
+    tabPadding.PaddingBottom = UDim.new(0, 20)
     tabPadding.Parent = tabScrollFrame
 
     -- Enhanced content container
     local contentContainer = createFrame({
         Name = "ContentContainer",
-        Size = UDim2.new(1, -235, 1, -80),
-        Position = UDim2.new(0, 225, 0, 80),
+        Size = UDim2.new(1, -230, 1, -80),
+        Position = UDim2.new(0, 220, 0, 80),
         BackgroundTransparency = 1,
         Parent = mainFrame
     })
@@ -1167,8 +1636,7 @@ function LRDLibrary:CreateWindow(settings)
             dragStart = input.Position
             startPos = mainFrame.Position
             
-            playSound(LRDLibrary.Sounds.Click, 0.2)
-            LRDLibrary.Animations.Spring(mainFrame, {Size = mainFrame.Size * 0.98}, 0.8, 10)
+            playSound(LRDLibrary.Sounds.Click, 0.4)
         end
     end)
 
@@ -1183,48 +1651,46 @@ function LRDLibrary:CreateWindow(settings)
     end)
 
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
-            LRDLibrary.Animations.Spring(mainFrame, {Size = mainFrame.Size / 0.98}, 0.8, 10)
         end
     end)
 
     -- Enhanced window control functionality
-    local minimized = false
     local originalSize = mainFrame.Size
 
     minimizeButton.MouseButton1Click:Connect(function()
-        minimized = not minimized
+        Window.Minimized = not Window.Minimized
         
-        playSound(LRDLibrary.Sounds.Whoosh, 0.3)
-        
-        if minimized then
-            LRDLibrary.Animations.Spring(mainFrame, {
+        if Window.Minimized then
+            tween(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back), {
                 Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 70)
-            }, 0.6, 6)
-            minimizeButton.Text = "□"
+            })
+            minimizeButton.Text = LRDLibrary.Icons.Plus
         else
-            LRDLibrary.Animations.Spring(mainFrame, {
+            tween(mainFrame, TweenInfo.new(0.4, Enum.EasingStyle.Back), {
                 Size = originalSize
-            }, 0.6, 6)
-            minimizeButton.Text = "−"
+            })
+            minimizeButton.Text = LRDLibrary.Icons.Minus
         end
+        
+        playSound(LRDLibrary.Sounds.Whoosh, 0.5)
     end)
 
     closeButton.MouseButton1Click:Connect(function()
-        playSound(LRDLibrary.Sounds.Pop, 0.4)
+        playSound(LRDLibrary.Sounds.Click, 0.6)
         
-        if LRDLibrary.Config.ParticleEffects then
-            LRDLibrary.Particles.CreateConfetti(mainFrame, 15)
-        end
+        -- Create exit particle effect
+        createParticleEffect(mainFrame, "sparkle", 1)
         
-        LRDLibrary.Animations.Spring(mainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.8, 8)
-        LRDLibrary.Animations.FadeOut(mainFrame, 0.5, function()
-            screenGui:Destroy()
-        end)
+        LRDLibrary.Animations.FadeOut(mainFrame, 0.4):Play()
+        LRDLibrary.Animations.ScaleIn(mainFrame, UDim2.new(0, 0, 0, 0), 0.4):Play()
+        
+        task.wait(0.4)
+        screenGui:Destroy()
     end)
 
-    -- Tab management with enhanced animations
+    -- Tab management system
     local currentTab = nil
     local tabCount = 0
 
@@ -1240,38 +1706,33 @@ function LRDLibrary:CreateWindow(settings)
         -- Enhanced tab button
         local tabButton = createTextButton({
             Name = tabName,
-            Size = UDim2.new(1, 0, 0, 55),
+            Size = UDim2.new(1, 0, 0, 50),
             BackgroundColor3 = LRDLibrary.Theme.TabBackground,
+            BackgroundTransparency = 0.3,
             Text = "",
             LayoutOrder = tabCount,
             Parent = tabScrollFrame
         })
-        addCorner(tabButton, 12)
-        addRippleEffect(tabButton)
-        addGlassmorphism(tabButton, 0.1)
+        addCorner(tabButton, 10)
+        addRipple(tabButton, LRDLibrary.Theme.Primary)
 
-        -- Tab icon with enhanced styling
-        local tabIcon = createFrame({
-            Size = UDim2.new(0, 30, 0, 30),
-            Position = UDim2.new(0, 15, 0.5, -15),
-            BackgroundColor3 = LRDLibrary.Theme.Primary,
-            Parent = tabButton
-        })
-        addCorner(tabIcon, 15)
-
-        local iconText = createTextLabel({
-            Size = UDim2.new(1, 0, 1, 0),
-            Text = settings.Icon or "📄",
-            TextSize = 16,
-            Font = Enum.Font.GothamBold,
-            TextColor3 = Color3.fromRGB(255, 255, 255),
-            Parent = tabIcon
-        })
+        -- Tab icon with animation
+        if settings.Icon then
+            local tabIcon = createTextLabel({
+                Size = UDim2.new(0, 24, 0, 24),
+                Position = UDim2.new(0, 15, 0.5, -12),
+                Text = settings.Icon,
+                TextSize = 18,
+                TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
+                Parent = tabButton
+            })
+            Tab.Icon = tabIcon
+        end
 
         -- Enhanced tab label
         local tabLabel = createTextLabel({
-            Size = UDim2.new(1, -60, 1, 0),
-            Position = UDim2.new(0, 55, 0, 0),
+            Size = UDim2.new(1, settings.Icon and -50 or -20, 1, 0),
+            Position = UDim2.new(0, settings.Icon and 50 or 15, 0, 0),
             Text = tabName,
             TextSize = 14,
             Font = Enum.Font.GothamBold,
@@ -1305,51 +1766,74 @@ function LRDLibrary:CreateWindow(settings)
         contentPadding.PaddingBottom = UDim.new(0, 20)
         contentPadding.Parent = tabContent
 
-        -- Auto-resize content
+        -- Auto-resize content with smooth animation
         contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            tabContent.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 40)
+            local targetSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 40)
+            tween(tabContent, TweenInfo.new(0.3), {CanvasSize = targetSize})
         end)
 
         -- Enhanced tab selection with animations
         tabButton.MouseButton1Click:Connect(function()
             if currentTab then
+                -- Deselect current tab
                 currentTab.content.Visible = false
-                tween(currentTab.button, TweenInfo.new(0.3), {BackgroundColor3 = LRDLibrary.Theme.TabBackground})
-                tween(currentTab.label, TweenInfo.new(0.3), {TextColor3 = LRDLibrary.Theme.SecondaryTextColor})
-                tween(currentTab.icon, TweenInfo.new(0.3), {BackgroundColor3 = LRDLibrary.Theme.Secondary})
+                tween(currentTab.button, TweenInfo.new(0.3), {
+                    BackgroundColor3 = LRDLibrary.Theme.TabBackground,
+                    BackgroundTransparency = 0.3
+                })
+                tween(currentTab.label, TweenInfo.new(0.3), {
+                    TextColor3 = LRDLibrary.Theme.SecondaryTextColor
+                })
+                if currentTab.icon then
+                    tween(currentTab.icon, TweenInfo.new(0.3), {
+                        TextColor3 = LRDLibrary.Theme.SecondaryTextColor
+                    })
+                end
             end
 
             currentTab = {
                 content = tabContent,
                 button = tabButton,
                 label = tabLabel,
-                icon = tabIcon
+                icon = Tab.Icon
             }
             
+            -- Select new tab with enhanced animation
             tabContent.Visible = true
-            tween(tabButton, TweenInfo.new(0.3), {BackgroundColor3 = LRDLibrary.Theme.TabBackgroundSelected})
-            tween(tabLabel, TweenInfo.new(0.3), {TextColor3 = LRDLibrary.Theme.TextColor})
-            tween(tabIcon, TweenInfo.new(0.3), {BackgroundColor3 = LRDLibrary.Theme.Primary})
+            tween(tabButton, TweenInfo.new(0.3), {
+                BackgroundColor3 = LRDLibrary.Theme.TabBackgroundSelected,
+                BackgroundTransparency = 0.1
+            })
+            tween(tabLabel, TweenInfo.new(0.3), {
+                TextColor3 = LRDLibrary.Theme.TextColor
+            })
+            if Tab.Icon then
+                tween(Tab.Icon, TweenInfo.new(0.3), {
+                    TextColor3 = LRDLibrary.Theme.TextColor
+                })
+            end
             
-            LRDLibrary.Animations.Spring(tabIcon, {Size = UDim2.new(0, 32, 0, 32)}, 0.7, 8)
-            task.wait(0.1)
-            LRDLibrary.Animations.Spring(tabIcon, {Size = UDim2.new(0, 30, 0, 30)}, 0.7, 8)
+            -- Content entrance animation
+            LRDLibrary.Animations.FadeIn(tabContent, 0.3):Play()
             
-            playSound(LRDLibrary.Sounds.Tab, 0.3)
+            playSound(LRDLibrary.Sounds.Tab, 0.5)
         end)
 
-        -- Enhanced hover effects
+        -- Tab hover effects
         tabButton.MouseEnter:Connect(function()
             if currentTab and currentTab.button ~= tabButton then
-                tween(tabButton, TweenInfo.new(0.2), {BackgroundColor3 = LRDLibrary.Theme.ElementBackgroundHover})
-                LRDLibrary.Animations.Spring(tabIcon, {Size = UDim2.new(0, 32, 0, 32)}, 0.8, 10)
+                tween(tabButton, TweenInfo.new(0.2), {
+                    BackgroundTransparency = 0.1
+                })
             end
+            playSound(LRDLibrary.Sounds.Hover, 0.2)
         end)
 
         tabButton.MouseLeave:Connect(function()
             if currentTab and currentTab.button ~= tabButton then
-                tween(tabButton, TweenInfo.new(0.2), {BackgroundColor3 = LRDLibrary.Theme.TabBackground})
-                LRDLibrary.Animations.Spring(tabIcon, {Size = UDim2.new(0, 30, 0, 30)}, 0.8, 10)
+                tween(tabButton, TweenInfo.new(0.2), {
+                    BackgroundTransparency = 0.3
+                })
             end
         end)
 
@@ -1359,14 +1843,14 @@ function LRDLibrary:CreateWindow(settings)
             tabButton.MouseButton1Click()
         end
 
-        -- Add tooltip
+        -- Add enhanced tooltip
         if settings.Tooltip then
-            LRDLibrary:CreateTooltip(tabButton, settings.Tooltip)
+            LRDLibrary:CreateTooltip(tabButton, settings.Tooltip, 0.5, "right")
         end
 
         Window.Tabs[tabName] = Tab
 
-        -- Enhanced Tab Functions
+        -- Enhanced Tab Element Creation Functions
         function Tab:CreateSection(settings)
             local sectionName = settings.Name or "Section"
             local elementCount = #Tab.Elements + 1
@@ -1379,7 +1863,7 @@ function LRDLibrary:CreateWindow(settings)
             })
 
             local sectionLabel = createTextLabel({
-                Size = UDim2.new(1, 0, 0, 35),
+                Size = UDim2.new(1, 0, 0, 30),
                 Position = UDim2.new(0, 0, 0, 0),
                 Text = sectionName,
                 TextSize = 18,
@@ -1396,24 +1880,25 @@ function LRDLibrary:CreateWindow(settings)
                 BorderSizePixel = 0,
                 Parent = sectionFrame
             })
-            addCorner(sectionLine, 1.5)
+            addCorner(sectionLine, 2)
             addGradient(sectionLine)
 
             if settings.Description then
                 local description = createTextLabel({
-                    Size = UDim2.new(1, 0, 0, 18),
-                    Position = UDim2.new(0, 0, 0, 35),
+                    Size = UDim2.new(1, 0, 0, 15),
+                    Position = UDim2.new(0, 0, 0, 45),
                     Text = settings.Description,
-                    TextSize = 13,
-                    Font = Enum.Font.Gotham,
+                    TextSize = 12,
                     TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = sectionFrame
                 })
                 
                 sectionFrame.Size = UDim2.new(1, 0, 0, 75)
-                sectionLine.Position = UDim2.new(0, 0, 0, 55)
             end
+
+            -- Section entrance animation
+            LRDLibrary.Animations.SlideIn(sectionFrame, "Left", 0.4):Play()
 
             table.insert(Tab.Elements, {Type = "Section", Element = sectionFrame, Name = sectionName})
             return sectionFrame
@@ -1432,24 +1917,24 @@ function LRDLibrary:CreateWindow(settings)
             })
             addCorner(buttonFrame, 12)
             addStroke(buttonFrame, LRDLibrary.Theme.ElementStroke, 1, 0.5)
-            addRippleEffect(buttonFrame)
-            addGlassmorphism(buttonFrame, 0.1)
+            addGlassmorphism(buttonFrame)
+            addRipple(buttonFrame, LRDLibrary.Theme.Primary)
 
             local button = createTextButton({
                 Size = UDim2.new(1, 0, 1, 0),
                 Text = buttonName,
-                TextSize = 15,
+                TextSize = 14,
                 Font = Enum.Font.GothamBold,
+                TextColor3 = LRDLibrary.Theme.TextColor,
                 Parent = buttonFrame
             })
 
             if settings.Description then
                 local description = createTextLabel({
-                    Size = UDim2.new(1, -20, 0, 18),
+                    Size = UDim2.new(1, -20, 0, 15),
                     Position = UDim2.new(0, 10, 0, 30),
                     Text = settings.Description,
-                    TextSize = 12,
-                    Font = Enum.Font.Gotham,
+                    TextSize = 11,
                     TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = buttonFrame
@@ -1462,23 +1947,23 @@ function LRDLibrary:CreateWindow(settings)
 
             -- Enhanced hover effects
             button.MouseEnter:Connect(function()
-                LRDLibrary.Animations.Spring(buttonFrame, {Size = buttonFrame.Size + UDim2.new(0, 4, 0, 2)}, 0.7, 8)
-                tween(buttonFrame, TweenInfo.new(0.2), {BackgroundColor3 = LRDLibrary.Theme.ElementBackgroundHover})
-                playSound(LRDLibrary.Sounds.Hover, 0.2)
+                tween(buttonFrame, TweenInfo.new(0.2), {
+                    BackgroundColor3 = LRDLibrary.Theme.ElementBackgroundHover
+                })
+                LRDLibrary.Animations.Pulse(buttonFrame, 0.05, 0.2):Play()
+                playSound(LRDLibrary.Sounds.Hover, 0.3)
             end)
 
             button.MouseLeave:Connect(function()
-                LRDLibrary.Animations.Spring(buttonFrame, {Size = buttonFrame.Size - UDim2.new(0, 4, 0, 2)}, 0.7, 8)
-                tween(buttonFrame, TweenInfo.new(0.2), {BackgroundColor3 = LRDLibrary.Theme.ElementBackground})
+                tween(buttonFrame, TweenInfo.new(0.2), {
+                    BackgroundColor3 = LRDLibrary.Theme.ElementBackground
+                })
             end)
 
             button.MouseButton1Click:Connect(function()
-                LRDLibrary.Animations.Bounce(buttonFrame, 8, 0.1)
-                playSound(LRDLibrary.Sounds.Click, 0.4)
-                
-                if LRDLibrary.Config.ParticleEffects then
-                    LRDLibrary.Particles.CreateConfetti(buttonFrame, 8)
-                end
+                LRDLibrary.Animations.Pulse(buttonFrame, 0.1, 0.15):Play()
+                createParticleEffect(buttonFrame, "sparkle", 0.8)
+                playSound(LRDLibrary.Sounds.Click, 0.6)
                 
                 if settings.Callback then
                     local success, error = pcall(settings.Callback)
@@ -1487,7 +1972,7 @@ function LRDLibrary:CreateWindow(settings)
                             Title = "Error",
                             Content = "Button callback failed: " .. tostring(error),
                             Type = "Error",
-                            Duration = 4
+                            Duration = 3
                         })
                     end
                 end
@@ -1497,6 +1982,9 @@ function LRDLibrary:CreateWindow(settings)
                 LRDLibrary:CreateTooltip(buttonFrame, settings.Tooltip)
             end
 
+            -- Entrance animation
+            LRDLibrary.Animations.SlideIn(buttonFrame, "Left", 0.3, Enum.EasingStyle.Back):Play()
+
             local ButtonAPI = {}
             
             function ButtonAPI:SetText(text)
@@ -1505,6 +1993,11 @@ function LRDLibrary:CreateWindow(settings)
             
             function ButtonAPI:SetCallback(callback)
                 settings.Callback = callback
+            end
+
+            function ButtonAPI:SetEnabled(enabled)
+                button.Visible = enabled
+                buttonFrame.BackgroundTransparency = enabled and 0 or 0.5
             end
 
             table.insert(Tab.Elements, {Type = "Button", Element = buttonFrame, Name = buttonName, API = ButtonAPI})
@@ -1525,32 +2018,32 @@ function LRDLibrary:CreateWindow(settings)
             })
             addCorner(toggleFrame, 12)
             addStroke(toggleFrame, LRDLibrary.Theme.ElementStroke, 1, 0.5)
-            addGlassmorphism(toggleFrame, 0.1)
+            addGlassmorphism(toggleFrame)
 
             local label = createTextLabel({
                 Size = UDim2.new(1, -80, 1, 0),
-                Position = UDim2.new(0, 20, 0, 0),
+                Position = UDim2.new(0, 15, 0, 0),
                 Text = toggleName,
-                TextSize = 15,
+                TextSize = 14,
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Left,
+                TextColor3 = LRDLibrary.Theme.TextColor,
                 Parent = toggleFrame
             })
 
             if settings.Description then
                 local description = createTextLabel({
-                    Size = UDim2.new(1, -80, 0, 18),
-                    Position = UDim2.new(0, 20, 0, 30),
+                    Size = UDim2.new(1, -80, 0, 15),
+                    Position = UDim2.new(0, 15, 0, 30),
                     Text = settings.Description,
-                    TextSize = 12,
-                    Font = Enum.Font.Gotham,
+                    TextSize = 11,
                     TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = toggleFrame
                 })
                 
                 label.Size = UDim2.new(1, -80, 0, 25)
-                label.Position = UDim2.new(0, 20, 0, 5)
+                label.Position = UDim2.new(0, 15, 0, 5)
                 toggleFrame.Size = UDim2.new(1, 0, 0, 65)
             end
 
@@ -1581,6 +2074,7 @@ function LRDLibrary:CreateWindow(settings)
                 BackgroundTransparency = 1,
                 Parent = toggleFrame
             })
+            addRipple(button)
 
             button.MouseButton1Click:Connect(function()
                 currentValue = not currentValue
@@ -1588,10 +2082,14 @@ function LRDLibrary:CreateWindow(settings)
                 local newToggleColor = currentValue and LRDLibrary.Theme.ToggleEnabled or LRDLibrary.Theme.ToggleDisabled
                 local newPosition = currentValue and UDim2.new(1, -27, 0.5, -12) or UDim2.new(0, 3, 0.5, -12)
 
-                LRDLibrary.Animations.Spring(toggleBackground, {BackgroundColor3 = newToggleColor}, 0.6, 8)
-                LRDLibrary.Animations.Spring(toggleIndicator, {Position = newPosition}, 0.8, 10)
+                tween(toggleBackground, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = newToggleColor})
+                tween(toggleIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = newPosition})
 
-                playSound(LRDLibrary.Sounds.Toggle, 0.4)
+                if currentValue then
+                    createParticleEffect(toggleBackground, "sparkle", 0.5)
+                end
+
+                playSound(LRDLibrary.Sounds.Toggle, 0.5, currentValue and 1.2 or 0.8)
 
                 if settings.Callback then
                     local success, error = pcall(settings.Callback, currentValue)
@@ -1600,7 +2098,7 @@ function LRDLibrary:CreateWindow(settings)
                             Title = "Error",
                             Content = "Toggle callback failed: " .. tostring(error),
                             Type = "Error",
-                            Duration = 4
+                            Duration = 3
                         })
                     end
                 end
@@ -1610,6 +2108,9 @@ function LRDLibrary:CreateWindow(settings)
                 LRDLibrary:CreateTooltip(toggleFrame, settings.Tooltip)
             end
 
+            -- Entrance animation
+            LRDLibrary.Animations.SlideIn(toggleFrame, "Left", 0.3, Enum.EasingStyle.Back):Play()
+
             local ToggleAPI = {}
             
             function ToggleAPI:Set(value)
@@ -1617,8 +2118,8 @@ function LRDLibrary:CreateWindow(settings)
                 local newToggleColor = currentValue and LRDLibrary.Theme.ToggleEnabled or LRDLibrary.Theme.ToggleDisabled
                 local newPosition = currentValue and UDim2.new(1, -27, 0.5, -12) or UDim2.new(0, 3, 0.5, -12)
 
-                LRDLibrary.Animations.Spring(toggleBackground, {BackgroundColor3 = newToggleColor}, 0.6, 8)
-                LRDLibrary.Animations.Spring(toggleIndicator, {Position = newPosition}, 0.8, 10)
+                tween(toggleBackground, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {BackgroundColor3 = newToggleColor})
+                tween(toggleIndicator, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = newPosition})
             end
             
             function ToggleAPI:Get()
@@ -1646,32 +2147,34 @@ function LRDLibrary:CreateWindow(settings)
             })
             addCorner(sliderFrame, 12)
             addStroke(sliderFrame, LRDLibrary.Theme.ElementStroke, 1, 0.5)
-            addGlassmorphism(sliderFrame, 0.1)
+            addGlassmorphism(sliderFrame)
 
             local label = createTextLabel({
-                Size = UDim2.new(1, -100, 0, 30),
-                Position = UDim2.new(0, 20, 0, 10),
+                Size = UDim2.new(1, -100, 0, 25),
+                Position = UDim2.new(0, 15, 0, 10),
                 Text = sliderName,
-                TextSize = 15,
+                TextSize = 14,
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Left,
+                TextColor3 = LRDLibrary.Theme.TextColor,
                 Parent = sliderFrame
             })
 
             local valueLabel = createTextLabel({
-                Size = UDim2.new(0, 80, 0, 30),
-                Position = UDim2.new(1, -90, 0, 10),
+                Size = UDim2.new(0, 80, 0, 25),
+                Position = UDim2.new(1, -95, 0, 10),
                 Text = tostring(currentValue),
-                TextSize = 15,
+                TextSize = 14,
                 Font = Enum.Font.GothamBold,
                 TextXAlignment = Enum.TextXAlignment.Right,
                 TextColor3 = LRDLibrary.Theme.Primary,
                 Parent = sliderFrame
             })
 
+            -- Enhanced slider track
             local sliderTrack = createFrame({
-                Size = UDim2.new(1, -40, 0, 10),
-                Position = UDim2.new(0, 20, 0, 50),
+                Size = UDim2.new(1, -30, 0, 10),
+                Position = UDim2.new(0, 15, 0, 50),
                 BackgroundColor3 = LRDLibrary.Theme.SliderBackground,
                 BorderSizePixel = 0,
                 Parent = sliderFrame
@@ -1687,6 +2190,7 @@ function LRDLibrary:CreateWindow(settings)
             addCorner(sliderFill, 5)
             addGradient(sliderFill)
 
+            -- Enhanced slider handle
             local sliderHandle = createFrame({
                 Size = UDim2.new(0, 20, 0, 20),
                 Position = UDim2.new(0, -10, 0.5, -10),
@@ -1696,14 +2200,14 @@ function LRDLibrary:CreateWindow(settings)
             })
             addCorner(sliderHandle, 10)
             addShadow(sliderHandle, 8, 0.4)
+            addStroke(sliderHandle, LRDLibrary.Theme.Primary, 2, 0.3)
 
             if settings.Description then
                 local description = createTextLabel({
-                    Size = UDim2.new(1, -20, 0, 15),
-                    Position = UDim2.new(0, 20, 0, 65),
+                    Size = UDim2.new(1, -15, 0, 12),
+                    Position = UDim2.new(0, 15, 0, 65),
                     Text = settings.Description,
-                    TextSize = 12,
-                    Font = Enum.Font.Gotham,
+                    TextSize = 10,
                     TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
                     TextXAlignment = Enum.TextXAlignment.Left,
                     Parent = sliderFrame
@@ -1719,7 +2223,7 @@ function LRDLibrary:CreateWindow(settings)
                 currentValue = math.clamp(round(value / increment) * increment, min, max)
                 local percentage = (currentValue - min) / (max - min)
                 
-                LRDLibrary.Animations.Spring(sliderFill, {Size = UDim2.new(percentage, 0, 1, 0)}, 0.7, 8)
+                tween(sliderFill, TweenInfo.new(0.1), {Size = UDim2.new(percentage, 0, 1, 0)})
                 valueLabel.Text = settings.Suffix and (tostring(currentValue) .. settings.Suffix) or tostring(currentValue)
 
                 if settings.Callback then
@@ -1729,7 +2233,7 @@ function LRDLibrary:CreateWindow(settings)
                             Title = "Error",
                             Content = "Slider callback failed: " .. tostring(error),
                             Type = "Error",
-                            Duration = 4
+                            Duration = 3
                         })
                     end
                 end
@@ -1740,16 +2244,16 @@ function LRDLibrary:CreateWindow(settings)
             sliderTrack.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = true
-                    playSound(LRDLibrary.Sounds.Slider, 0.3)
+                    playSound(LRDLibrary.Sounds.Slider, 0.4)
                     
-                    LRDLibrary.Animations.Spring(sliderHandle, {Size = UDim2.new(0, 24, 0, 24)}, 0.8, 10)
+                    tween(sliderHandle, TweenInfo.new(0.1), {Size = UDim2.new(0, 24, 0, 24)})
                 end
             end)
 
             UserInputService.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 and dragging then
                     dragging = false
-                    LRDLibrary.Animations.Spring(sliderHandle, {Size = UDim2.new(0, 20, 0, 20)}, 0.8, 10)
+                    tween(sliderHandle, TweenInfo.new(0.2, Enum.EasingStyle.Back), {Size = UDim2.new(0, 20, 0, 20)})
                 end
             end)
 
@@ -1768,6 +2272,9 @@ function LRDLibrary:CreateWindow(settings)
                 LRDLibrary:CreateTooltip(sliderFrame, settings.Tooltip)
             end
 
+            -- Entrance animation
+            LRDLibrary.Animations.SlideIn(sliderFrame, "Left", 0.3, Enum.EasingStyle.Back):Play()
+
             local SliderAPI = {}
             
             function SliderAPI:Set(value)
@@ -1776,6 +2283,16 @@ function LRDLibrary:CreateWindow(settings)
             
             function SliderAPI:Get()
                 return currentValue
+            end
+
+            function SliderAPI:SetMin(newMin)
+                min = newMin
+                updateSlider(currentValue)
+            end
+
+            function SliderAPI:SetMax(newMax)
+                max = newMax
+                updateSlider(currentValue)
             end
 
             table.insert(Tab.Elements, {Type = "Slider", Element = sliderFrame, Name = sliderName, API = SliderAPI})
@@ -1792,128 +2309,144 @@ function LRDLibrary:CreateWindow(settings)
         BorderSizePixel = 0,
         Parent = mainFrame
     })
-    addCorner(loadingFrame, 20)
+    addCorner(loadingFrame, 16)
+    addGlassmorphism(loadingFrame)
 
-    local loadingIcon = createFrame({
-        Size = UDim2.new(0, 60, 0, 60),
-        Position = UDim2.new(0.5, -30, 0.5, -60),
-        BackgroundColor3 = LRDLibrary.Theme.Primary,
+    -- Loading animation container
+    local loadingContainer = createFrame({
+        Size = UDim2.new(0, 300, 0, 200),
+        Position = UDim2.new(0.5, -150, 0.5, -100),
+        BackgroundTransparency = 1,
         Parent = loadingFrame
     })
-    addCorner(loadingIcon, 30)
 
-    local loadingIconText = createTextLabel({
-        Size = UDim2.new(1, 0, 1, 0),
-        Text = "⚡",
-        TextSize = 30,
-        Font = Enum.Font.GothamBold,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Parent = loadingIcon
+    -- Animated logo
+    local logo = createTextLabel({
+        Size = UDim2.new(0, 80, 0, 80),
+        Position = UDim2.new(0.5, -40, 0, 0),
+        Text = LRDLibrary.Icons.Terminal,
+        TextSize = 48,
+        TextColor3 = LRDLibrary.Theme.Primary,
+        Parent = loadingContainer
     })
 
+    -- Pulsing animation for logo
+    local logoPulse
+    logoPulse = function()
+        LRDLibrary.Animations.Pulse(logo, 0.2, 1):Play()
+        task.wait(1)
+        if loadingFrame.Parent then
+            logoPulse()
+        end
+    end
+    spawn(logoPulse)
+
+    -- Loading text
     local loadingText = createTextLabel({
-        Size = UDim2.new(1, 0, 0, 35),
-        Position = UDim2.new(0, 0, 0.5, -10),
+        Size = UDim2.new(1, 0, 0, 30),
+        Position = UDim2.new(0, 0, 0, 90),
         Text = settings.LoadingTitle or "Loading LRD.dev Interface...",
-        TextSize = 22,
+        TextSize = 20,
         Font = Enum.Font.GothamBold,
-        Parent = loadingFrame
+        TextColor3 = LRDLibrary.Theme.TextColor,
+        Parent = loadingContainer
     })
 
     local loadingSubtitle = createTextLabel({
-        Size = UDim2.new(1, 0, 0, 25),
-        Position = UDim2.new(0, 0, 0.5, 25),
-        Text = settings.LoadingSubtitle or "Premium Edition v" .. LRDLibrary.Version,
+        Size = UDim2.new(1, 0, 0, 20),
+        Position = UDim2.new(0, 0, 0, 125),
+        Text = settings.LoadingSubtitle or "Please wait...",
         TextSize = 14,
-        Font = Enum.Font.Gotham,
         TextColor3 = LRDLibrary.Theme.SecondaryTextColor,
-        Parent = loadingFrame
+        Parent = loadingContainer
     })
 
-    local loadingBar = createFrame({
-        Size = UDim2.new(0, 250, 0, 6),
-        Position = UDim2.new(0.5, -125, 0.5, 60),
+    -- Enhanced loading progress bar
+    local progressBarBg = createFrame({
+        Size = UDim2.new(0, 200, 0, 6),
+        Position = UDim2.new(0.5, -100, 0, 160),
         BackgroundColor3 = LRDLibrary.Theme.ElementBackground,
         BorderSizePixel = 0,
-        Parent = loadingFrame
+        Parent = loadingContainer
     })
-    addCorner(loadingBar, 3)
+    addCorner(progressBarBg, 3)
 
-    local loadingProgress = createFrame({
+    local progressBar = createFrame({
         Size = UDim2.new(0, 0, 1, 0),
         BackgroundColor3 = LRDLibrary.Theme.Primary,
         BorderSizePixel = 0,
-        Parent = loadingBar
+        Parent = progressBarBg
     })
-    addCorner(loadingProgress, 3)
-    addGradient(loadingProgress)
-
-    -- Enhanced loading animations
-    local spinTween = TweenService:Create(loadingIcon, TweenInfo.new(2, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1), {Rotation = 360})
-    spinTween:Play()
-
-    local pulseTween = TweenService:Create(loadingIcon, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Size = UDim2.new(0, 65, 0, 65)})
-    pulseTween:Play()
+    addCorner(progressBar, 3)
+    addGradient(progressBar)
 
     -- Animate loading progress
-    local progressTween = tween(loadingProgress, TweenInfo.new(2.5, Enum.EasingStyle.Quad), {
+    tween(progressBar, TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
         Size = UDim2.new(1, 0, 1, 0)
     })
 
-    progressTween.Completed:Connect(function()
-        spinTween:Cancel()
-        pulseTween:Cancel()
+    -- Remove loading screen after delay
+    task.spawn(function()
+        task.wait(2.5)
         
-        LRDLibrary.Animations.FadeOut(loadingFrame, 0.6, function()
-            loadingFrame:Destroy()
-        end)
+        LRDLibrary.Animations.FadeOut(loadingFrame, 0.5):Play()
+        
+        task.wait(0.5)
+        loadingFrame:Destroy()
         
         -- Show welcome notification
-        if settings.WelcomeMessage ~= false then
-            task.wait(0.3)
+        if settings.ShowWelcome ~= false then
             LRDLibrary:Notify({
-                Title = "Welcome to " .. Window.Name .. "!",
-                Content = "Premium UI Library v" .. LRDLibrary.Version .. " loaded successfully",
+                Title = "Welcome!",
+                Content = "Welcome to " .. Window.Name .. "! 🎉",
                 Type = "Success",
-                Duration = 5
+                Duration = 4
             })
         end
+        
+        -- Play entrance sound
+        playSound(LRDLibrary.Sounds.Success, 0.8, 1)
+        
+        -- Create welcome particle effect
+        createParticleEffect(mainFrame, "confetti", 2)
     end)
 
-    -- Enhanced Window API
-    function Window:SetTitle(title)
-        Window.Name = title
-        title.Text = title
-    end
-
-    function Window:SetSize(size)
-        LRDLibrary.Animations.Spring(mainFrame, {Size = size}, 0.6, 6)
-    end
-
-    function Window:SetPosition(position)
-        LRDLibrary.Animations.Spring(mainFrame, {Position = position}, 0.6, 6)
+    -- Window API functions
+    function Window:SetTitle(newTitle)
+        Window.Name = newTitle
+        title.Text = newTitle
     end
 
     function Window:Destroy()
-        LRDLibrary.Animations.Spring(mainFrame, {Size = UDim2.new(0, 0, 0, 0)}, 0.8, 8)
-        LRDLibrary.Animations.FadeOut(mainFrame, 0.5, function()
-            screenGui:Destroy()
-        end)
+        screenGui:Destroy()
     end
 
-    function Window:Hide()
-        LRDLibrary.Animations.FadeOut(screenGui, 0.3)
+    function Window:SetVisible(visible)
+        screenGui.Enabled = visible
     end
 
-    function Window:Show()
-        LRDLibrary.Animations.FadeIn(screenGui, 0.3)
+    function Window:Minimize()
+        minimizeButton.MouseButton1Click()
     end
 
-    function Window:ToggleVisibility()
-        if screenGui.Enabled then
-            Window:Hide()
-        else
-            Window:Show()
+    function Window:Close()
+        closeButton.MouseButton1Click()
+    end
+
+    function Window:GetCurrentTab()
+        return currentTab and currentTab.tab
+    end
+
+    function Window:SelectTab(tabName)
+        local tab = Window.Tabs[tabName]
+        if tab then
+            -- Find the tab button and simulate click
+            for _, child in pairs(tabScrollFrame:GetChildren()) do
+                if child.Name == tabName and child:IsA("TextButton") then
+                    child.MouseButton1Click()
+                    break
+                end
+            end
         end
     end
 
@@ -1921,6 +2454,20 @@ function LRDLibrary:CreateWindow(settings)
 end
 
 -- Initialize the library
-loadConfig()
+spawn(function()
+    -- Auto-load configuration on startup
+    loadConfig()
+    
+    -- Show library loaded notification if debug mode is enabled
+    if LRDLibrary.Config.DebugMode then
+        task.wait(1)
+        LRDLibrary:Notify({
+            Title = "LRD.dev Library",
+            Content = "Library v" .. LRDLibrary.Version .. " loaded successfully!",
+            Type = "Info",
+            Duration = 3
+        })
+    end
+end)
 
 return LRDLibrary
